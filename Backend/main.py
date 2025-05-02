@@ -1,14 +1,20 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Depends
 from fastapi.responses import JSONResponse
 import httpx
 from starlette.middleware.cors import CORSMiddleware
+from datetime import datetime
+from sqlalchemy.orm import Session
 
+import models
+from database import engine, get_db
 from services.product_search_service import ProductSearchService
+
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For development only, restrict in production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -26,7 +32,10 @@ product_search_service = ProductSearchService(
 
 
 @app.post("/upload/")
-async def upload_image(file: UploadFile = File(...)):
+async def upload_image(
+        file: UploadFile = File(...),
+        db: Session = Depends(get_db)
+):
     try:
         file_content = await file.read()
 
@@ -42,8 +51,21 @@ async def upload_image(file: UploadFile = File(...)):
 
         if response.status_code == 200:
             data = response.json()
+            imgur_url = data["data"]["link"]
+
+            # Store in database
+            db_image = models.UploadedImage(
+                original_filename=file.filename,
+                imgur_url=imgur_url,
+                upload_date=datetime.now().isoformat()
+            )
+            db.add(db_image)
+            db.commit()
+            db.refresh(db_image)
+
             return JSONResponse(content={
-                "link": data["data"]["link"]
+                "link": imgur_url,
+                "id": db_image.id
             }, status_code=200)
         else:
             raise HTTPException(
@@ -68,4 +90,26 @@ async def search_products(image: str):
         raise HTTPException(
             status_code=500,
             detail=f"Unexpected error: {str(e)}"
+        )
+
+
+@app.get("/images")
+async def get_uploaded_images(db: Session = Depends(get_db)):
+    try:
+        images = db.query(models.UploadedImage).order_by(models.UploadedImage.upload_date.desc()).all()
+        return {
+            "images": [
+                {
+                    "id": img.id,
+                    "url": img.imgur_url,
+                    "filename": img.original_filename,
+                    "upload_date": img.upload_date
+                }
+                for img in images
+            ]
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error retrieving images: {str(e)}"
         )

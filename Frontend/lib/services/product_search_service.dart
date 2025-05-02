@@ -4,14 +4,12 @@ import 'package:http/http.dart' as http;
 
 class ProductSearchService {
   final String baseUrl;
-  final String authToken;
 
-  ProductSearchService({required this.baseUrl, required this.authToken});
+  ProductSearchService({required this.baseUrl});
 
   Future<ProductSearchResponse> searchProducts(String imageLink) async {
     final uri = Uri.parse('$baseUrl/products');
     final headers = {
-      'Authorization': 'Bearer $authToken',
       'Content-Type': 'application/json',
       'User-Agent': 'OpenPlatform/1.0',
     };

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'widgets/image_picker_widget.dart'; // Make sure the path is correct for your project structure
+import 'widgets/image_gallery_widget.dart';
+import 'widgets/image_picker_widget.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,30 +12,73 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Imgur Uploader',
+      title: 'Dress Me Up',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true, // Optional: Enables Material 3 design
+        useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Imgur Uploader Home Page'),
+      home: const MyHomePage(title: 'Dress Me Up'),
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
   final String title;
 
   const MyHomePage({super.key, required this.title});
 
   @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  int _currentIndex = 0;
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text(widget.title),
       ),
-      body: Center(
-        child: ImagePickerWidget(),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          ImageGalleryWidget(
+            baseUrl: 'http://localhost:8000',
+          ),
+          // Add other screens here
+        ],
+      ),
+      floatingActionButton: _currentIndex == 0
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ImagePickerWidget(),
+                  ),
+                );
+              },
+              child: const Icon(Icons.add),
+            )
+          : null,
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.photo_library),
+            label: 'Gallery',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: 'Favorites',
+          ),
+        ],
       ),
     );
   }
