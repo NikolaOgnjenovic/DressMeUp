@@ -26,7 +26,7 @@ class _ImageDetailsPageState extends State<ImageDetailsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Outfit Details'),
+        title: const Text('Similar fits'),
       ),
       body: FutureBuilder<List<ProductSearchResponse>>(
         future: _detailsFuture,
@@ -36,7 +36,7 @@ class _ImageDetailsPageState extends State<ImageDetailsPage> {
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No details found'));
+            return const Center(child: Text('No similar fits found'));
           }
 
           final details = snapshot.data!;
@@ -86,7 +86,7 @@ class _ImageDetailsPageState extends State<ImageDetailsPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Buy this article',
+                      'Similar fits',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -144,7 +144,6 @@ class _ImageDetailsPageState extends State<ImageDetailsPage> {
                                 ],
                               ),
                             ),
-                            // Open icon (now clickable via the whole row)
                             const Padding(
                               padding: EdgeInsets.only(left: 8),
                               child: Icon(Icons.chevron_right, size: 20),
