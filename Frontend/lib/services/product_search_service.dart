@@ -1,14 +1,11 @@
 import 'dart:convert';
+import 'package:dress_me_up/config/app_config.dart';
 import 'package:dress_me_up/dtos/product_search_dto.dart';
 import 'package:http/http.dart' as http;
 
 class ProductSearchService {
-  final String baseUrl;
-
-  ProductSearchService({required this.baseUrl});
-
   Future<ProductSearchResponse> searchProducts(String imageLink) async {
-    final uri = Uri.parse('$baseUrl/products');
+    final uri = Uri.parse('${AppConfig.baseUrl}/products');
     final headers = {
       'Content-Type': 'application/json',
       'User-Agent': 'OpenPlatform/1.0',

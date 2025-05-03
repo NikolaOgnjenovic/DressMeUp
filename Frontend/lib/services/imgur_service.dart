@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:dress_me_up/config/app_config.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:html' as html if (dart.library.io) 'dart:io';
 
 class ImgurService {
   Future<String?> uploadImage(dynamic imageFile) async {
-    final uri = Uri.parse('http://localhost:8000/upload/');
+    final uri = Uri.parse('${AppConfig.baseUrl}/upload/');
     final request = http.MultipartRequest('POST', uri);
 
     if (kIsWeb) {

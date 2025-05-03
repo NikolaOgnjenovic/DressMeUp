@@ -1,6 +1,8 @@
+import 'package:dress_me_up/config/app_config.dart';
 import 'package:flutter/material.dart';
-import 'widgets/image_gallery_widget.dart';
-import 'widgets/image_picker_widget.dart';
+import 'package:dress_me_up/widgets/image_picker_widget.dart';
+import 'package:dress_me_up/widgets/top_outfits_widget.dart';
+import 'package:dress_me_up/widgets/user_images_widget.dart';
 
 void main() {
   runApp(const MyApp());
@@ -43,42 +45,49 @@ class _MyHomePageState extends State<MyHomePage> {
       body: IndexedStack(
         index: _currentIndex,
         children: [
-          ImageGalleryWidget(
-            baseUrl: 'http://localhost:8000',
+          // Home screen with both widgets
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                TopOutfitsWidget(baseUrl: AppConfig.baseUrl),
+                UserImagesWidget(baseUrl: AppConfig.baseUrl),
+              ],
+            ),
           ),
-          // Add other screens here
+          // Favorites screen
+          const Center(child: Text('Favorites')),
         ],
       ),
-      floatingActionButton: _currentIndex == 0
-          ? FloatingActionButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ImagePickerWidget(),
-                  ),
-                );
-              },
-              child: const Icon(Icons.add),
-            )
-          : null,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+          if (index == 1) { // Camera icon index
+            _openImagePicker(context);
+          } else {
+            setState(() {
+              _currentIndex = index;
+            });
+          }
         },
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.photo_library),
-            label: 'Gallery',
+            icon: Icon(Icons.home),
+            label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: 'Favorites',
-          ),
+            icon: Icon(Icons.camera_alt),
+            label: 'Add',
+          )
         ],
+      ),
+    );
+  }
+
+  void _openImagePicker(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ImagePickerWidget(),
       ),
     );
   }
