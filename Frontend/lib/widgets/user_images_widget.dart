@@ -17,6 +17,7 @@ class _UserImagesWidgetState extends State<UserImagesWidget> {
   List<ImageUploadResponse> _userImages = [];
   bool _isLoading = true;
   String? _error;
+  int? _hoveredIndex;
 
   @override
   void initState() {
@@ -46,8 +47,11 @@ class _UserImagesWidgetState extends State<UserImagesWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Your Captured Outfits',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          'Your saved fits',
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(height: 12),
         
@@ -59,54 +63,81 @@ class _UserImagesWidgetState extends State<UserImagesWidget> {
         
         if (!_isLoading && _error == null)
           SizedBox(
-            height: 260,
+            height: 280,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: _userImages.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
+              separatorBuilder: (_, __) => const SizedBox(width: 16),
               itemBuilder: (context, index) {
                 final image = _userImages[index];
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ImageDetailsPage(imageUrl: image.imgurUrl),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    width: 180,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 6)],
-                      color: Colors.white,
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          Image.network(
-                            image.imgurUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => 
-                              const Center(child: Icon(Icons.error)),
-                          ),
-                          Align(
-                            alignment: Alignment.bottomCenter,
-                            child: Container(
-                              color: Colors.black.withOpacity(0.4),
-                              padding: const EdgeInsets.all(8),
-                              child: const Text(
-                                'View Details',
-                                style: TextStyle(
-                                  color: Colors.white, 
-                                  fontWeight: FontWeight.w600),
-                              ),
+                return MouseRegion(
+                  onEnter: (_) => setState(() => _hoveredIndex = index),
+                  onExit: (_) => setState(() => _hoveredIndex = null),
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ImageDetailsPage(imageUrl: image.imgurUrl),
+                        ),
+                      );
+                    },
+                    child: AnimatedScale(
+                      duration: const Duration(milliseconds: 200),
+                      scale: _hoveredIndex == index ? 1.02 : 1.0,
+                      child: Container(
+                        width: 200,
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 5,
+                              spreadRadius: 2,
+                              offset: const Offset(0, 2),
                             ),
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 3,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                          color: Colors.white,
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              Image.network(
+                                image.imgurUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => 
+                                  const Center(child: Icon(Icons.error)),
+                              ),
+                              Positioned(
+                                bottom: 16,
+                                right: 0,
+                                left: 0,
+                                child: Center(
+                                  child: Icon(
+                                    Icons.remove_red_eye,
+                                    size: 28,
+                                    color: Colors.white,
+                                    shadows: [
+                                      Shadow(
+                                        blurRadius: 10,
+                                        color: Colors.black.withOpacity(0.5),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   ),

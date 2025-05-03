@@ -16,6 +16,8 @@ class TopOutfitsWidget extends StatefulWidget {
 class _TopOutfitsWidgetState extends State<TopOutfitsWidget> {
   List<ImageUploadResponse> _images = [];
   bool _isLoading = true;
+  String? _error;
+  int? _hoveredIndex;
 
   @override
   void initState() {
@@ -39,6 +41,7 @@ class _TopOutfitsWidgetState extends State<TopOutfitsWidget> {
     } catch (e) {
       debugPrint('Error fetching outfits: $e');
       setState(() {
+        _error = e.toString();
         _isLoading = false;
       });
     }
@@ -50,36 +53,65 @@ class _TopOutfitsWidgetState extends State<TopOutfitsWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Top Outfits Today',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          'Fits of the day',
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(height: 12),
-        _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : SizedBox(
-                height: 260,
-                child: _images.isEmpty
-                    ? const Center(child: Text("No images found."))
-                    : ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: _images.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 12),
-                        itemBuilder: (context, index) {
-                          final outfit = _images[index];
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => ImageDetailsPage(imageUrl: outfit.imgurUrl),
-                                ),
-                              );
-                            },
+        
+        if (_isLoading)
+          const Center(child: CircularProgressIndicator()),
+        
+        if (_error != null)
+          Text('Error: $_error', style: const TextStyle(color: Colors.red)),
+        
+        if (!_isLoading && _error == null)
+          SizedBox(
+            height: 280,
+            child: _images.isEmpty
+                ? const Center(child: Text("No images found."))
+                : ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _images.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 16),
+                    itemBuilder: (context, index) {
+                      final image = _images[index];
+                      return MouseRegion(
+                        onEnter: (_) => setState(() => _hoveredIndex = index),
+                        onExit: (_) => setState(() => _hoveredIndex = null),
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ImageDetailsPage(imageUrl: image.imgurUrl),
+                              ),
+                            );
+                          },
+                          child: AnimatedScale(
+                            duration: const Duration(milliseconds: 200),
+                            scale: _hoveredIndex == index ? 1.02 : 1.0,
                             child: Container(
-                              width: 180,
+                              width: 200,
+                              margin: const EdgeInsets.symmetric(vertical: 8),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(16),
-                                boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 6)],
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.2),
+                                    blurRadius: 5,
+                                    spreadRadius: 2,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 3,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ],
                                 color: Colors.white,
                               ),
                               child: ClipRRect(
@@ -88,21 +120,26 @@ class _TopOutfitsWidgetState extends State<TopOutfitsWidget> {
                                   fit: StackFit.expand,
                                   children: [
                                     Image.network(
-                                      outfit.imgurUrl,
+                                      image.imgurUrl,
                                       fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) =>
-                                          const Center(child: Icon(Icons.error)),
+                                      errorBuilder: (_, __, ___) => 
+                                        const Center(child: Icon(Icons.error)),
                                     ),
-                                    Align(
-                                      alignment: Alignment.bottomCenter,
-                                      child: Container(
-                                        color: Colors.black.withOpacity(0.4),
-                                        padding: const EdgeInsets.all(8),
-                                        child: const Text(
-                                          'View Details',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w600),
+                                    Positioned(
+                                      bottom: 16,
+                                      right: 0,
+                                      left: 0,
+                                      child: Center(
+                                        child: Icon(
+                                          Icons.remove_red_eye,
+                                          size: 28,
+                                          color: Colors.white,
+                                          shadows: [
+                                            Shadow(
+                                              blurRadius: 10,
+                                              color: Colors.black.withOpacity(0.5),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ),
@@ -110,10 +147,12 @@ class _TopOutfitsWidgetState extends State<TopOutfitsWidget> {
                                 ),
                               ),
                             ),
-                          );
-                        },
-                      ),
-              ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
       ],
     );
   }
