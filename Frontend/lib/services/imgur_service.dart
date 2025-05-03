@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:dress_me_up/config/app_config.dart';
+import 'package:dress_me_up/dtos/image_upload_response.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:html' as html if (dart.library.io) 'dart:io';
 
 class ImgurService {
-  Future<String?> uploadImage(dynamic imageFile) async {
+  Future<ImageUploadResponse?> uploadImage(dynamic imageFile) async {
     final uri = Uri.parse('${AppConfig.baseUrl}/images');
     final request = http.MultipartRequest('POST', uri);
 
@@ -31,7 +32,7 @@ class ImgurService {
     if (response.statusCode == 200) {
       final responseData = await http.Response.fromStream(response);
       final data = jsonDecode(responseData.body);
-      return data['link'];
+      return ImageUploadResponse.fromJson(data); // Convert JSON to Dart object
     } else {
       print('Upload failed with status: ${response.statusCode}');
       return null;

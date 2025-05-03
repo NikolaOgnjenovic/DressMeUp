@@ -54,7 +54,8 @@ async def upload_image(
 
             return {
                     "id": db_image.id,
-                    "imgur_url": db_image.imgur_url
+                    "imgur_url": db_image.imgur_url,
+                    "upload_date": db_image.upload_date
                     }
         else:
             raise HTTPException(

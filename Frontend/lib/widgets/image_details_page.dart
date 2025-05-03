@@ -59,7 +59,7 @@ class _ImageDetailsPageState extends State<ImageDetailsPage> {
         children: [
           if (response.products.isNotEmpty)
             Image.network(
-              response.products.first.imageUrl,
+              response.products.first.link,
               width: double.infinity,
               height: 200,
               fit: BoxFit.cover,
@@ -68,7 +68,7 @@ class _ImageDetailsPageState extends State<ImageDetailsPage> {
             ),
           ...response.products.map((product) => ListTile(
             leading: Image.network(
-              product.imageUrl,
+              product.link,
               width: 50,
               height: 50,
               fit: BoxFit.cover,
@@ -76,7 +76,7 @@ class _ImageDetailsPageState extends State<ImageDetailsPage> {
                 const Icon(Icons.error),
             ),
             title: Text(product.name),
-            subtitle: Text(product.price),
+            subtitle: Text(product.price.value.current.toString()),
           )),
         ],
       ),

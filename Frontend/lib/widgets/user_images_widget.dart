@@ -8,10 +8,10 @@ class UserImagesWidget extends StatelessWidget {
   UserImagesWidget({super.key, required this.baseUrl});
 
   final List<ImageUploadResponse> _hardcodedUserImageInfos = [
-    ImageUploadResponse(imageId: '5', imageUrl: 'https://i.imgur.com/mno345.jpg'),
-    ImageUploadResponse(imageId: '6', imageUrl: 'https://i.imgur.com/pqr678.jpg'),
-    ImageUploadResponse(imageId: '7', imageUrl: 'https://i.imgur.com/stu901.jpg'),
-    ImageUploadResponse(imageId: '8', imageUrl: 'https://i.imgur.com/vwx234.jpg'),
+    ImageUploadResponse(id: 5, imgurUrl: 'https://i.imgur.com/mno345.jpg'),
+    ImageUploadResponse(id: 6, imgurUrl: 'https://i.imgur.com/pqr678.jpg'),
+    ImageUploadResponse(id: 7, imgurUrl: 'https://i.imgur.com/stu901.jpg'),
+    ImageUploadResponse(id: 8, imgurUrl: 'https://i.imgur.com/vwx234.jpg'),
   ];
 
   @override
@@ -36,7 +36,7 @@ class UserImagesWidget extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => ImageDetailsPage(imageId: image.imageId)),
+                    MaterialPageRoute(builder: (_) => ImageDetailsPage(imageId: image.imgurUrl)),
                   );
                 },
                 child: Container(
@@ -52,7 +52,7 @@ class UserImagesWidget extends StatelessWidget {
                       fit: StackFit.expand,
                       children: [
                         Image.network(
-                          image.imageUrl,
+                          image.imgurUrl,
                           fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) => const Center(child: Icon(Icons.error)),
                         ),

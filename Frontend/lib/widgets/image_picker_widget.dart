@@ -45,13 +45,12 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
 
     try {
       final imgurService = ImgurService();
-      final url = await imgurService.uploadImage(image);
-
-      setState(() {
-        _imageUrl = url;
-      });
-
-      if (url != null) {
+      final response = await imgurService.uploadImage(image);
+      
+      if (response != null) {
+        setState(() {
+          _imageUrl = response.imgurUrl;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Upload successful!')),
         );

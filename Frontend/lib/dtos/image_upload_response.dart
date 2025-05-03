@@ -1,19 +1,21 @@
 class ImageUploadResponse {
-  final String imageId;
-  final String imageUrl;
+  final int id;
+  final String imgurUrl;
   final DateTime? uploadDate;
 
   ImageUploadResponse({
-    required this.imageId,
-    required this.imageUrl,
+    required this.id,
+    required this.imgurUrl,
     this.uploadDate,
   });
 
   factory ImageUploadResponse.fromJson(Map<String, dynamic> json) {
     return ImageUploadResponse(
-      imageId: json['image_id'],
-      imageUrl: json['image_url'],
-      uploadDate: json['upload_date'] != null ? DateTime.parse(json['upload_date']) : null,
+      id: json['id'],
+      imgurUrl: json['imgur_url'],
+      uploadDate: json['upload_date'] != null 
+          ? DateTime.parse(json['upload_date']) 
+          : null,
     );
   }
 }
