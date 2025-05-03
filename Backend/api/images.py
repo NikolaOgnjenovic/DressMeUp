@@ -156,7 +156,6 @@ Output the descriptions as a json list of long string, where every string repres
 
         saved_items = []
         for item_data in clothing_data:
-
             # --- Second Gemini Prompt: Transparent Image Generation ---
             segmentation_response = client.models.generate_content(
                 model="gemini-2.0-flash",
@@ -174,7 +173,7 @@ Output the descriptions as a json list of long string, where every string repres
 #                                 Return ONLY the base64 encoded string of the PNG image.
 #                                 Provide the FULL valid base64 image string that can be decoded."""
 #                             }'''
-                            {"text: Generate a red shirt, export it as base64 and nothing else"}
+                            {"text: Respond with only a string of a base64 encoded image of a red shirt. Reply with nothing else."}
                         ]
                     }
                 ]
