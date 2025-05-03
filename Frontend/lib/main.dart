@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
         useMaterial3: true,
-        fontFamily: 'Roboto',
+        fontFamily: 'Montserrat',
         scaffoldBackgroundColor: Colors.grey[50],
       ),
       home: const MyHomePage(),

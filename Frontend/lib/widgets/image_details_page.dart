@@ -56,57 +56,109 @@ class _ImageDetailsPageState extends State<ImageDetailsPage> {
   Widget _buildProductResponseCard(ProductSearchResponse response, BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16.0),
-      child: Column(
-        children: [
-          // Display the original image at the top
-          Image.network(
-            widget.imageUrl,
-            width: double.infinity,
-            height: 200,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => 
-              const Center(child: Icon(Icons.error, size: 100)),
-          ),
-          ...response.products.map((product) => ListTile(
-            leading: InkWell(
-              onTap: () => _launchUrl(product.link),
-              child: Stack(
-                children: [
-                  Image.network(
-                    product.link,
-                    width: 50,
-                    height: 50,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => 
-                      const Icon(Icons.error),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.7),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.open_in_new,
-                        color: Colors.white,
-                        size: 12,
-                      ),
-                    ),
-                  ),
-                ],
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: MediaQuery.of(context).size.width * 0.4,
+              height: MediaQuery.of(context).size.height * 0.8,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  widget.imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => 
+                    const Center(child: Icon(Icons.error, size: 40)),
+                ),
               ),
             ),
-            title: Text(product.name),
-            subtitle: Text('${product.price.value.current} ${product.price.currency}'),
-            trailing: IconButton(
-              icon: const Icon(Icons.open_in_new),
-              onPressed: () => _launchUrl(product.link),
+            const SizedBox(width: 16),
+            // Product details on the right - fit content width
+            Expanded(
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 400), // Limit max width
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Buy this article',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ...response.products.map((product) => InkWell(
+                      onTap: () => _launchUrl(product.link),
+                      onHover: (hovering) {
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(4),
+                          color: Theme.of(context).cardTheme.color,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 60,
+                              height: 60,
+                              margin: const EdgeInsets.only(right: 12),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(4),
+                                child: Image.network(
+                                  product.link,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) => 
+                                    const Icon(Icons.error),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    product.name,
+                                    style: const TextStyle(fontSize: 14),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${product.price.value.current} ${product.price.currency}',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Open icon (now clickable via the whole row)
+                            const Padding(
+                              padding: EdgeInsets.only(left: 8),
+                              child: Icon(Icons.chevron_right, size: 20),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )),
+                  ],
+                ),
+              ),
             ),
-          )),
-        ],
+          ],
+        ),
       ),
     );
   }
