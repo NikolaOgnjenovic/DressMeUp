@@ -11,6 +11,8 @@ from db import db
 import models
 from core.secrets import *
 from models.models import UploadedImage, SegmentedClothing
+from PIL import Image
+import io
 
 router = APIRouter(
     prefix="/images",
@@ -107,103 +109,80 @@ async def segment_clothing(
                 detail=f"Failed to download image from Imgur: {response.status_code}"
             )
 
+        # Base64 encode image
         image_bytes = response.content
         base64_image = base64.b64encode(image_bytes).decode("utf-8")
 
         client = genai.Client(api_key=GEMINI_API_KEY)
-        response = client.models.generate_content(
-            model="gemini-2.0-flash", contents=[
+
+        # Identify clothing with simplified prompt
+        identification_response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=[
                 base64_image,
-                f"""Analyze this image and identify all clothing items (t-shirts, pants, hats, etc.). 
-                    For each clothing item found, extract it as a separate image with a transparent background 
-                    (remove the background), and label it with the appropriate clothing type. 
-                    Return each segmented clothing item as a base64 encoded PNG image along with its label 
-                    in this exact JSON format: 
-                    {{
-                        "clothing_items": [
-                            {{
-                                "label": "t-shirt",
-                                "image": "base64_encoded_image_data"
-                            }},
-                            // ... more items if present
-                        ]
-                    }}"""]
+                """List clothing items in this image as JSON with labels and positions:
+                {"clothing_items": [{"label": "item1", "position": {"x1":0,"y1":0,"x2":100,"y2":100}}]}"""
+            ]
         )
 
-        print(response.text)
-        print(response)
+        # Extract clothing items
+        clothing_items = identification_response.candidates[0].content.parts[0].text
+        clothing_items = eval(clothing_items)["clothing_items"]
 
-        # TODO: Refactor to use response
-        if response.status_code != 200:
-            raise HTTPException(
-                status_code=response.status_code,
-                detail=f"Gemini API request failed: {response.text}"
+        saved_items = []
+        for item in clothing_items:
+            x1, y1, x2, y2 = item["position"].values()
+            cropped_image = crop_image(base64_image, x1, y1, x2, y2)
+
+            # Simplified segmentation prompt
+            segment_response = client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=[
+                    cropped_image,
+                    f"""Remove background from this {item['label']} and return as base64 PNG:
+                    {{"label": "{item['label']}", "image": "base64_data"}}"""
+                ]
             )
 
-        # Parse Gemini response
-        try:
-            response_data = response.json()
-            # Gemini returns the text in the 'text' field of the first candidate
-            gemini_response_text = response_data["candidates"][0]["content"]["parts"][0]["text"]
+            # Process segment response
+            segment_data = eval(segment_response.candidates[0].content.parts[0].text)
+            image_data = base64.b64decode(segment_data["image"])
 
-            # The response should be a JSON string, so we need to parse it
-            import json
-            segmented_data = json.loads(gemini_response_text)
-            clothing_items = segmented_data.get("clothing_items", [])
+            # Upload to Imgur
+            headers = {"Authorization": f"Client-ID {IMGUR_CLIENT_ID}"}
+            files = {"image": ("clothing.png", image_data)}
 
-            if not clothing_items:
-                raise HTTPException(
-                    status_code=400,
-                    detail="No clothing items found in the image"
+            async with httpx.AsyncClient() as client:
+                upload_response = await client.post(
+                    IMGUR_API_URL,
+                    headers=headers,
+                    files=files
                 )
 
-            # Upload each segmented clothing item to Imgur and save to database
-            saved_items = []
-            for item in clothing_items:
-                # Decode the base64 image
-                image_data = base64.b64decode(item["image"])
+            if upload_response.status_code == 200:
+                upload_data = upload_response.json()
+                imgur_url = upload_data["data"]["link"]
 
-                # Upload to Imgur
-                headers = {"Authorization": f"Client-ID {IMGUR_CLIENT_ID}"}
-                files = {"image": ("clothing.png", image_data)}
+                # Save to database
+                db_clothing = SegmentedClothing(
+                    original_image_id=image_id,
+                    label=item["label"],
+                    image_url=imgur_url,
+                    segmentation_date=datetime.utcnow()
+                )
+                db.add(db_clothing)
+                saved_items.append({
+                    "label": item["label"],
+                    "image_url": imgur_url
+                })
 
-                async with httpx.AsyncClient() as client:
-                    upload_response = await client.post(
-                        IMGUR_API_URL,
-                        headers=headers,
-                        files=files
-                    )
+        db.commit()
 
-                if upload_response.status_code == 200:
-                    upload_data = upload_response.json()
-                    imgur_url = upload_data["data"]["link"]
-
-                    # Save to database
-                    db_clothing = SegmentedClothing(
-                        original_image_id=image_id,
-                        label=item["label"],
-                        image_url=imgur_url,
-                        segmentation_date=datetime.utcnow()
-                    )
-                    db.add(db_clothing)
-                    saved_items.append({
-                        "label": item["label"],
-                        "image_url": imgur_url
-                    })
-
-            db.commit()
-
-            return {
-                "original_image_id": image_id,
-                "clothing_items": saved_items,
-                "segmentation_date": datetime.utcnow()
-            }
-
-        except (json.JSONDecodeError, KeyError, IndexError) as e:
-            raise HTTPException(
-                status_code=500,
-                detail=f"Failed to parse Gemini response: {str(e)}. Response: {gemini_response_text}"
-            )
+        return {
+            "original_image_id": image_id,
+            "clothing_items": saved_items,
+            "segmentation_date": datetime.utcnow()
+        }
 
     except Exception as e:
         raise HTTPException(
@@ -261,3 +240,13 @@ async def get_segmented_clothing(
             status_code=500,
             detail=f"Error retrieving segmented clothing: {str(e)}"
         )
+
+
+def crop_image(base64_img, x1, y1, x2, y2):
+    img_data = base64.b64decode(base64_img)
+    img = Image.open(io.BytesIO(img_data))
+    cropped_img = img.crop((x1, y1, x2, y2))
+
+    buffered = io.BytesIO()
+    cropped_img.save(buffered, format="PNG")
+    return base64.b64encode(buffered.getvalue()).decode("utf-8")
