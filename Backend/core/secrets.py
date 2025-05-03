@@ -13,6 +13,8 @@ OAUTH_CREDENTIALS = {
     "scope": "technology.catalog.read"
 }
 OAUTH_TOKEN_URL = "https://auth.inditex.com:443/openam/oauth2/itxid/itxidmp/access_token"
+GEMINI_API_KEY = "AIzaSyBTDVukwITX_qms-Yqh1_7x1H0hUFQonYo"
+GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 
 # Production
 # PRODUCT_SEARCH_URL = "https://api.inditex.com/pubvsearch"

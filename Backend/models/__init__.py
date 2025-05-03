@@ -14,3 +14,4 @@ def get_all_models() -> List[Type[SQLModel]]:
 
 from .models import UploadedImage
 from .models import CelebrityImage
+from .models import SegmentedClothing
