@@ -1,4 +1,5 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException, Depends
+from contextlib import asynccontextmanager
 from fastapi.responses import JSONResponse
 import httpx
 from starlette.middleware.cors import CORSMiddleware
@@ -6,12 +7,17 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 import models
-from database import engine, get_db
+from db import db
 from services.product_search_service import ProductSearchService
+from api import v1
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    db.create_db_and_tables()
+    yield
+    db.engine.dispose()
 
-models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -20,63 +26,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configuration
-IMGUR_API_URL = "https://api.imgur.com/3/image"
-IMGUR_CLIENT_ID = "dc6945bad2c734e"
-PRODUCT_SEARCH_URL = "https://api-sandbox.inditex.com/pubvsearch-sandbox"
-
+app.include_router(v1.v1)
+"""
 # Initialize service
 product_search_service = ProductSearchService(
     base_url=PRODUCT_SEARCH_URL
 )
 
-
-@app.post("/upload/")
-async def upload_image(
-        file: UploadFile = File(...),
-        db: Session = Depends(get_db)
-):
-    try:
-        file_content = await file.read()
-
-        headers = {"Authorization": f"Client-ID {IMGUR_CLIENT_ID}"}
-        files = {"image": (file.filename, file_content)}
-
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                IMGUR_API_URL,
-                headers=headers,
-                files=files
-            )
-
-        if response.status_code == 200:
-            data = response.json()
-            imgur_url = data["data"]["link"]
-
-            # Store in database
-            db_image = models.UploadedImage(
-                original_filename=file.filename,
-                imgur_url=imgur_url,
-                upload_date=datetime.now().isoformat()
-            )
-            db.add(db_image)
-            db.commit()
-            db.refresh(db_image)
-
-            return JSONResponse(content={
-                "link": imgur_url,
-                "id": db_image.id
-            }, status_code=200)
-        else:
-            raise HTTPException(
-                status_code=response.status_code,
-                detail=f"Imgur upload failed with status: {response.status_code}"
-            )
-    except Exception as e:
-        raise HTTPException(
-            status_code=400,
-            detail=str(e)
-        )
 
 
 @app.get("/products")
@@ -93,23 +49,4 @@ async def search_products(image: str):
         )
 
 
-@app.get("/images")
-async def get_uploaded_images(db: Session = Depends(get_db)):
-    try:
-        images = db.query(models.UploadedImage).order_by(models.UploadedImage.upload_date.desc()).all()
-        return {
-            "images": [
-                {
-                    "id": img.id,
-                    "url": img.imgur_url,
-                    "filename": img.original_filename,
-                    "upload_date": img.upload_date
-                }
-                for img in images
-            ]
-        }
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error retrieving images: {str(e)}"
-        )
+        """
