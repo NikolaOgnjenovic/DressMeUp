@@ -1,7 +1,10 @@
 import httpx
 from fastapi import HTTPException
 from datetime import datetime, timedelta
+from core.secrets import PRODUCT_SEARCH_URL
 
+async def get_product_search_service():
+    return ProductSearchService(base_url=PRODUCT_SEARCH_URL)
 
 class ProductSearchService:
     def __init__(self, base_url: str):

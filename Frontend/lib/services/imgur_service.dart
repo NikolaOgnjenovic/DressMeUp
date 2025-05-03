@@ -7,7 +7,7 @@ import 'dart:html' as html if (dart.library.io) 'dart:io';
 
 class ImgurService {
   Future<String?> uploadImage(dynamic imageFile) async {
-    final uri = Uri.parse('${AppConfig.baseUrl}/upload/');
+    final uri = Uri.parse('${AppConfig.baseUrl}/images');
     final request = http.MultipartRequest('POST', uri);
 
     if (kIsWeb) {
