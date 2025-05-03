@@ -1,6 +1,7 @@
 import 'package:dress_me_up/dtos/image_upload_response.dart';
 import 'package:dress_me_up/services/imgur_service.dart';
 import 'package:dress_me_up/widgets/image_details_page.dart';
+import 'package:dress_me_up/widgets/network_image_with_spinner.dart';
 import 'package:flutter/material.dart';
 
 class UserImagesWidget extends StatefulWidget {
@@ -111,12 +112,7 @@ class _UserImagesWidgetState extends State<UserImagesWidget> {
                           child: Stack(
                             fit: StackFit.expand,
                             children: [
-                              Image.network(
-                                image.imgurUrl,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => 
-                                  const Center(child: Icon(Icons.error)),
-                              ),
+                              NetworkImageWithLoader(imageUrl: image.imgurUrl),
                               Positioned(
                                 bottom: 16,
                                 right: 0,
