@@ -4,27 +4,14 @@ import 'package:flutter/material.dart';
 
 class UserImagesWidget extends StatelessWidget {
   final String baseUrl;
-  
+
   UserImagesWidget({super.key, required this.baseUrl});
 
-  // Hardcoded image info data
   final List<ImageUploadResponse> _hardcodedUserImageInfos = [
-    ImageUploadResponse(
-      imageId: '5',
-      imageUrl: 'https://i.imgur.com/mno345.jpg',
-    ),
-    ImageUploadResponse(
-      imageId: '6',
-      imageUrl: 'https://i.imgur.com/pqr678.jpg',
-    ),
-    ImageUploadResponse(
-      imageId: '7',
-      imageUrl: 'https://i.imgur.com/stu901.jpg',
-    ),
-    ImageUploadResponse(
-      imageId: '8',
-      imageUrl: 'https://i.imgur.com/vwx234.jpg',
-    ),
+    ImageUploadResponse(imageId: '5', imageUrl: 'https://i.imgur.com/mno345.jpg'),
+    ImageUploadResponse(imageId: '6', imageUrl: 'https://i.imgur.com/pqr678.jpg'),
+    ImageUploadResponse(imageId: '7', imageUrl: 'https://i.imgur.com/stu901.jpg'),
+    ImageUploadResponse(imageId: '8', imageUrl: 'https://i.imgur.com/vwx234.jpg'),
   ];
 
   @override
@@ -32,66 +19,59 @@ class UserImagesWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text(
-            'Your Outfits',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
+        const Text(
+          'Your Captured Outfits',
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         ),
+        const SizedBox(height: 12),
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
+          itemCount: _hardcodedUserImageInfos.length,
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            crossAxisSpacing: 8.0,
-            mainAxisSpacing: 8.0,
-            childAspectRatio: 0.8,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 0.75,
           ),
-          itemCount: _hardcodedUserImageInfos.length,
           itemBuilder: (context, index) {
-            final imageInfo = _hardcodedUserImageInfos[index];
-            return _buildImageCard(imageInfo, context);
+            final image = _hardcodedUserImageInfos[index];
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => ImageDetailsPage(imageId: image.imageId)),
+                );
+              },
+              child: Card(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 3,
+                clipBehavior: Clip.hardEdge,
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: Image.network(
+                        image.imageUrl,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        errorBuilder: (_, __, ___) => const Center(child: Icon(Icons.error)),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      alignment: Alignment.center,
+                      child: const Text(
+                        'View Details',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
           },
         ),
       ],
-    );
-  }
-
-  Widget _buildImageCard(ImageUploadResponse imageInfo, BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ImageDetailsPage(imageId: imageInfo.imageId),
-          ),
-        );
-      },
-      child: Card(
-        elevation: 2,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Image.network(
-                imageInfo.imageUrl,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                errorBuilder: (context, error, stackTrace) => 
-                  const Center(child: Icon(Icons.error)),
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text(
-                'View Details',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
