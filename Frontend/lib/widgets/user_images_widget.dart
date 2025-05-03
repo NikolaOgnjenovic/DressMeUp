@@ -71,7 +71,7 @@ class _UserImagesWidgetState extends State<UserImagesWidget> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => ImageDetailsPage(imageId: image.imgurUrl),
+                        builder: (_) => ImageDetailsPage(imageUrl: image.imgurUrl),
                       ),
                     );
                   },

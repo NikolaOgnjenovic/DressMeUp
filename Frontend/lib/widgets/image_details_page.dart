@@ -1,11 +1,11 @@
 import 'package:dress_me_up/dtos/product_search_dto.dart';
-import 'package:dress_me_up/services/image_details_service.dart';
+import 'package:dress_me_up/services/product_search_service.dart';
 import 'package:flutter/material.dart';
 
 class ImageDetailsPage extends StatefulWidget {
-  final String imageId;
+  final String imageUrl;
 
-  const ImageDetailsPage({super.key, required this.imageId});
+  const ImageDetailsPage({super.key, required this.imageUrl});
 
   @override
   _ImageDetailsPageState createState() => _ImageDetailsPageState();
@@ -13,12 +13,12 @@ class ImageDetailsPage extends StatefulWidget {
 
 class _ImageDetailsPageState extends State<ImageDetailsPage> {
   late Future<List<ProductSearchResponse>> _detailsFuture;
-  final ImageDetailsService _detailsService = ImageDetailsService();
+  final ProductSearchService _detailsService = ProductSearchService();
 
   @override
   void initState() {
     super.initState();
-    _detailsFuture = _detailsService.getImageDetails(widget.imageId);
+    _detailsFuture = _detailsService.searchProducts(widget.imageUrl);
   }
 
   @override

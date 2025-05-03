@@ -36,7 +36,7 @@ class TopOutfitsWidget extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => ImageDetailsPage(imageId: outfit.imgurUrl)),
+                    MaterialPageRoute(builder: (_) => ImageDetailsPage(imageUrl: outfit.imgurUrl)),
                   );
                 },
                 child: Container(

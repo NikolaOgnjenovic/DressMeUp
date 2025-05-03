@@ -4,8 +4,8 @@ import 'package:dress_me_up/dtos/product_search_dto.dart';
 import 'package:http/http.dart' as http;
 
 class ProductSearchService {
-  Future<ProductSearchResponse> searchProducts(String imageLink) async {
-    final uri = Uri.parse('${AppConfig.baseUrl}/products');
+  Future<List<ProductSearchResponse>> searchProducts(String imageLink) async {
+    final uri = Uri.parse('${AppConfig.baseUrl}/products/search');
     final headers = {
       'Content-Type': 'application/json',
       'User-Agent': 'OpenPlatform/1.0',
@@ -17,7 +17,8 @@ class ProductSearchService {
     );
 
     if (response.statusCode == 200) {
-      return ProductSearchResponse.fromJson(jsonDecode(response.body));
+      final data = jsonDecode(response.body) as List;
+      return [ProductSearchResponse.fromJson(data)];
     } else {
       throw Exception('Failed to search products: ${response.statusCode}');
     }
