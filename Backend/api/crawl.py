@@ -34,12 +34,6 @@ class CelebrityCrawlRequest(BaseModel):
     require_hq: bool = False  # If True, will return error if no HQ images found
 
 
-class ImageResponse(ImageUploadResponse):
-    is_hq: bool
-    width: Optional[int] = None
-    height: Optional[int] = None
-
-
 def verify_image_resolution(url: str) -> Tuple[bool, Optional[int], Optional[int]]:
     """Check if image meets HQ requirements"""
     try:
@@ -170,7 +164,7 @@ def get_lq_images_from_google(name: str, max_images: int) -> List[str]:
 
 @router.post("/crawl-celebrity-quality",
              status_code=status.HTTP_200_OK,
-             response_model=List[ImageResponse])
+             response_model=List[ImageUploadResponse])
 async def crawl_celebrity_images_with_fallback(
         request: CelebrityCrawlRequest,
         db: Annotated[Session, Depends(db.get_db)]
@@ -290,7 +284,7 @@ async def crawl_celebrity_images_with_fallback(
 
 @router.get("/celebrity/quality",
             status_code=status.HTTP_200_OK,
-            response_model=List[ImageResponse])
+            response_model=List[ImageUploadResponse])
 async def get_celebrity_images_with_quality(
         db: Annotated[Session, Depends(db.get_db)],
         celebrity_name: Optional[str] = None,
@@ -305,8 +299,6 @@ async def get_celebrity_images_with_quality(
         query = select(CelebrityImage)
         if celebrity_name:
             query = query.where(CelebrityImage.celebrity_name == celebrity_name)
-        if min_quality == 'hq':
-            query = query.where(CelebrityImage.is_high_quality == True)
 
         images = db.exec(query.order_by(CelebrityImage.crawl_date.desc())).all()
 
@@ -314,9 +306,6 @@ async def get_celebrity_images_with_quality(
             "id": img.id,
             "imgur_url": img.image_url,
             "upload_date": img.crawl_date,
-            "is_hq": img.is_high_quality,
-            "width": img.width,
-            "height": img.height
         } for img in images]
 
     except Exception as e:
