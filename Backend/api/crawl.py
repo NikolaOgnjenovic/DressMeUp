@@ -56,7 +56,6 @@ def verify_image_resolution(url: str) -> Tuple[bool, Optional[int], Optional[int
         width, height = img.size
 
         is_hq = width >= HQ_MIN_WIDTH and height >= HQ_MIN_HEIGHT
-        is_lq = width <= LQ_MAX_WIDTH or height <= LQ_MAX_HEIGHT
 
         return is_hq, width, height
 
@@ -264,9 +263,6 @@ async def crawl_celebrity_images_with_fallback(
                 source="quality_crawl",
                 celebrity_name=request.name,
                 crawl_date=datetime.utcnow(),
-                is_high_quality=is_hq,
-                width=width,
-                height=height
             )
             db.add(db_image)
             db.commit()
