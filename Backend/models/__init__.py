@@ -13,3 +13,4 @@ def get_all_models() -> List[Type[SQLModel]]:
     return _registry.copy()
 
 from .models import UploadedImage
+from .models import CelebrityImage
