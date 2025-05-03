@@ -1,7 +1,7 @@
 import httpx
 from fastapi import HTTPException
 from datetime import datetime, timedelta
-from core.secrets import PRODUCT_SEARCH_URL
+from core.secrets import PRODUCT_SEARCH_URL, OAUTH_CREDENTIALS, OAUTH_TOKEN_URL
 
 async def get_product_search_service():
     return ProductSearchService(base_url=PRODUCT_SEARCH_URL)
@@ -11,14 +11,8 @@ class ProductSearchService:
         self.base_url = base_url
         self.auth_token = None
         self.token_expiry = None
-        # Hardcoded credentials from your curl command
-        self.oauth_credentials = {
-            "username": "oauth-mkpsbox-oauthunuzbwosdzjcmkzsyhsnbxpro",
-            "password": "]o_2_L9vIXQ1lh6I",  # Empty password as per your curl command
-            "grant_type": "client_credentials",
-            "scope": "technology.catalog.read"
-        }
-        self.token_url = "https://auth.inditex.com:443/openam/oauth2/itxid/itxidmp/sandbox/access_token"
+        self.oauth_credentials = OAUTH_CREDENTIALS
+        self.token_url = OAUTH_TOKEN_URL
 
     async def get_token(self):
         # Check if we have a valid token

@@ -6,3 +6,10 @@ IMGUR_API_URL = "https://api.imgur.com/3/image"
 IMGUR_CLIENT_ID = "dc6945bad2c734e"
 PRODUCT_SEARCH_URL = "https://api-sandbox.inditex.com/pubvsearch-sandbox"
 
+OAUTH_CREDENTIALS = {
+    "username": "oauth-mkpsbox-oauthunuzbwosdzjcmkzsyhsnbxpro",
+    "password": "]o_2_L9vIXQ1lh6I",
+    "grant_type": "client_credentials",
+    "scope": "technology.catalog.read"
+}
+OAUTH_TOKEN_URL = "https://auth.inditex.com:443/openam/oauth2/itxid/itxidmp/sandbox/access_token"
