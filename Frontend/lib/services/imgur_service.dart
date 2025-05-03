@@ -45,4 +45,16 @@ class ImgurService {
     await reader.onLoad.first;
     return reader.result as List<int>;
   }
+
+  Future<List<ImageUploadResponse>> getImages() async {
+    final uri = Uri.parse('${AppConfig.baseUrl}/images/images');
+    final response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((item) => ImageUploadResponse.fromJson(item)).toList();
+    } else {
+      throw Exception('Failed to load images: ${response.statusCode}');
+    }
+  }
 }
