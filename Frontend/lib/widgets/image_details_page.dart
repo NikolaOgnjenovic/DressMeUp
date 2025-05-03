@@ -54,110 +54,148 @@ class _ImageDetailsPageState extends State<ImageDetailsPage> {
   }
 
   Widget _buildProductResponseCard(ProductSearchResponse response, BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16.0),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              width: MediaQuery.of(context).size.width * 0.4,
-              height: MediaQuery.of(context).size.height * 0.8,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  widget.imageUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => 
-                    const Center(child: Icon(Icons.error, size: 40)),
+    final isMobile = MediaQuery.of(context).size.width < 600;
+    
+    if (isMobile) {
+      return Card(
+        margin: const EdgeInsets.only(bottom: 16.0),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Image on top for mobile
+              Container(
+                width: double.infinity,
+                height: MediaQuery.of(context).size.height * 0.4,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    widget.imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => 
+                      const Center(child: Icon(Icons.error, size: 40)),
+                  ),
                 ),
               ),
+              const SizedBox(height: 16),
+              // Product details below for mobile
+              _buildProductDetails(response, context),
+            ],
+          ),
+        ),
+      );
+    } else {
+      return Card(
+        margin: const EdgeInsets.only(bottom: 16.0),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: MediaQuery.of(context).size.width * 0.4,
+                height: MediaQuery.of(context).size.height * 0.8,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    widget.imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => 
+                      const Center(child: Icon(Icons.error, size: 40)),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              // Product details on the right for wider screens
+              Expanded(
+                child: _buildProductDetails(response, context),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+  }
+
+  Widget _buildProductDetails(ProductSearchResponse response, BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 400),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Similar fits',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
             ),
-            const SizedBox(width: 16),
-            // Product details on the right - fit content width
-            Expanded(
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 400), // Limit max width
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Similar fits',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+          ),
+          const SizedBox(height: 12),
+          ...response.products.map((product) => InkWell(
+            onTap: () => _launchUrl(product.link),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: Theme.of(context).cardTheme.color,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 60,
+                    height: 60,
+                    margin: const EdgeInsets.only(right: 12),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: Image.network(
+                        product.link,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => 
+                          const Icon(Icons.error),
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    ...response.products.map((product) => InkWell(
-                      onTap: () => _launchUrl(product.link),
-                      onHover: (hovering) {
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(4),
-                          color: Theme.of(context).cardTheme.color,
+                  ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          product.name,
+                          style: const TextStyle(fontSize: 14),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 60,
-                              height: 60,
-                              margin: const EdgeInsets.only(right: 12),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(4),
-                                child: Image.network(
-                                  product.link,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) => 
-                                    const Icon(Icons.error),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    product.name,
-                                    style: const TextStyle(fontSize: 14),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '${product.price.value.current} ${product.price.currency}',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const Padding(
-                              padding: EdgeInsets.only(left: 8),
-                              child: Icon(Icons.chevron_right, size: 20),
-                            ),
-                          ],
+                        const SizedBox(height: 4),
+                        Text(
+                          '${product.price.value.current} ${product.price.currency}',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                    )),
-                  ],
-                ),
+                      ],
+                    ),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.only(left: 8),
+                    child: Icon(Icons.chevron_right, size: 20),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          )),
+        ],
       ),
     );
   }

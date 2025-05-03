@@ -47,7 +47,7 @@ class ImgurService {
   }
 
   Future<List<ImageUploadResponse>> getImages() async {
-    final uri = Uri.parse('${AppConfig.baseUrl}/images/images');
+    final uri = Uri.parse('${AppConfig.baseUrl}/images');
     final response = await http.get(uri);
 
     if (response.statusCode == 200) {
