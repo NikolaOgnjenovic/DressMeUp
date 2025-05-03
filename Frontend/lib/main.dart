@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'widgets/image_gallery_widget.dart';
-import 'widgets/image_picker_widget.dart';
+import 'package:dress_me_up/config/app_config.dart';
+import 'package:dress_me_up/widgets/image_picker_widget.dart';
+import 'package:dress_me_up/widgets/top_outfits_widget.dart';
+import 'package:dress_me_up/widgets/user_images_widget.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,74 +14,53 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Dress Me Up',
+      title: 'Dress me up',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
         useMaterial3: true,
+        fontFamily: 'Montserrat',
       ),
-      home: const MyHomePage(title: 'Dress Me Up'),
+      home: const MyHomePage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  final String title;
-
-  const MyHomePage({super.key, required this.title});
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _currentIndex = 0;
+class MyHomePage extends StatelessWidget {
+  const MyHomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: const Text(
+          'Dress Me Up',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
       ),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: [
-          ImageGalleryWidget(
-            baseUrl: 'http://localhost:8000',
-          ),
-          // Add other screens here
-        ],
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TopOutfitsWidget(baseUrl: AppConfig.baseUrl),
+            const SizedBox(height: 24),
+            UserImagesWidget(baseUrl: AppConfig.baseUrl),
+            const SizedBox(height: 100), // space for FAB
+          ],
+        ),
       ),
-      floatingActionButton: _currentIndex == 0
-          ? FloatingActionButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ImagePickerWidget(),
-                  ),
-                );
-              },
-              child: const Icon(Icons.add),
-            )
-          : null,
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ImagePickerWidget()),
+          );
         },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.photo_library),
-            label: 'Gallery',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: 'Favorites',
-          ),
-        ],
+        icon: const Icon(Icons.camera_alt),
+        label: const Text('Add Outfit'),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
