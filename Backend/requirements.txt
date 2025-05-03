@@ -7,3 +7,4 @@ starlette==0.46.2
 requests~=2.32.3
 beautifulsoup4~=4.13.4
 pillow~=11.2.1
+google~=3.0.0

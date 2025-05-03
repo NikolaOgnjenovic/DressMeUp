@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Annotated, List
 from fastapi import APIRouter, UploadFile, File, Depends, status, HTTPException
+from google import genai
 from pydantic import BaseModel
 from sqlmodel import Session, select
 import httpx
@@ -109,19 +110,11 @@ async def segment_clothing(
         image_bytes = response.content
         base64_image = base64.b64encode(image_bytes).decode("utf-8")
 
-        # Prepare Gemini API request
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {GEMINI_API_KEY}"
-        }
-
-        # This prompt asks Gemini to segment the image into clothing items
-        # and return them as separate base64 encoded images with labels
-        payload = {
-            "key": GEMINI_API_KEY,
-            "contents": [{
-                "parts": [{
-                    "text": f"""Analyze this image and identify all clothing items (t-shirts, pants, hats, etc.). 
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        response = client.models.generate_content(
+            model="gemini-2.0-flash", contents=[
+                base64_image,
+                f"""Analyze this image and identify all clothing items (t-shirts, pants, hats, etc.). 
                     For each clothing item found, extract it as a separate image with a transparent background 
                     (remove the background), and label it with the appropriate clothing type. 
                     Return each segmented clothing item as a base64 encoded PNG image along with its label 
@@ -134,23 +127,13 @@ async def segment_clothing(
                             }},
                             // ... more items if present
                         ]
-                    }}""",
-                    "inline_data": {
-                        "mime_type": "image/jpeg",
-                        "data": base64_image
-                    }
-                }]
-            }]
-        }
+                    }}"""]
+        )
 
-        # Call Gemini API
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                GEMINI_API_URL,  # Make sure this is defined in your secrets
-                headers=headers,
-                json=payload
-            )
+        print(response.text)
+        print(response)
 
+        # TODO: Refactor to use response
         if response.status_code != 200:
             raise HTTPException(
                 status_code=response.status_code,
