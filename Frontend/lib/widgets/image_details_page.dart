@@ -77,7 +77,7 @@ class _ImageDetailsPageState extends State<ImageDetailsPage> {
                     widget.imageUrl,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) => 
-                      const Center(child: Icon(Icons.error, size: 40)),
+                      const Center(child: Icon(Icons.shopping_bag_outlined, size: 40)),
                   ),
                 ),
               ),
@@ -130,13 +130,6 @@ class _ImageDetailsPageState extends State<ImageDetailsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Similar fits',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-          ),
           const SizedBox(height: 12),
           ...response.products.map((product) => InkWell(
             onTap: () => _launchUrl(product.link),
