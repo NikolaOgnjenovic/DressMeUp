@@ -87,6 +87,8 @@ async def upload_image(
             detail=str(e)
         )
 
+# Segment an image with the provided id into an image for each piece of clothing.
+# The clothing piece images are on a transparent background and are optimal for the Inditex API.
 @router.post("/segment/{image_id}",
              status_code=status.HTTP_200_OK,
              response_model=SegmentedImageResponse)
@@ -163,17 +165,16 @@ Output the descriptions as a json list of long string, where every string repres
                     {
                         "role": "user",
                         "parts": [
-#                             '''{
-#                                 "text": f"""Generate a photorealistic image of a clothing item based on the following description: {item_data}. The image should:
-#
-# *   Display the clothing item on a transparent background.
-# *   Show the clothing item in a clear, well-lit, and professional manner, as if photographed for an online retail store.
-# *   Capture all the key details described, including the material, color, pattern/print, style/fit, and distinguishing features.
-# *   Be suitable for product display on an e-commerce website.
-#                                 Return ONLY the base64 encoded string of the PNG image.
-#                                 Provide the FULL valid base64 image string that can be decoded."""
-#                             }'''
-                            {"text: Respond with only a string of a base64 encoded image of a red shirt. Reply with nothing else."}
+                            {
+                                "text": f"""Generate a photorealistic image of a clothing item based on the following description: {item_data}. The image should:
+
+*   Display the clothing item on a transparent background.
+*   Show the clothing item in a clear, well-lit, and professional manner, as if photographed for an online retail store.
+*   Capture all the key details described, including the material, color, pattern/print, style/fit, and distinguishing features.
+*   Be suitable for product display on an e-commerce website.
+                                Return ONLY the base64 encoded string of the PNG image.
+                                Provide the FULL valid base64 image string that can be decoded."""
+                            }
                         ]
                     }
                 ]
@@ -255,78 +256,4 @@ async def get_uploaded_images(
         raise HTTPException(
             status_code=500,
             detail=f"Error retrieving images: {str(e)}"
-        )
-
-
-@router.get("/segmented/{image_id}",
-            status_code=status.HTTP_200_OK,
-            response_model=List[ClothingItem])
-async def get_segmented_clothing(
-        image_id: int,
-        db: Annotated[Session, Depends(db.get_db)]
-):
-    try:
-        clothing_items = db.exec(
-            select(SegmentedClothing)
-            .where(SegmentedClothing.original_image_id == image_id)
-            .order_by(SegmentedClothing.segmentation_date.desc())
-        ).all()
-
-        return [
-            {
-                "label": item.label,
-                "image_url": item.image_url
-            }
-            for item in clothing_items
-        ]
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error retrieving segmented clothing: {str(e)}"
-        )
-
-
-def crop_image(base64_img: str, x1: int, y1: int, x2: int, y2: int) -> str:
-    """
-    Crop an image from base64 string and return as base64 PNG
-
-    Args:
-        base64_img: Base64 encoded image string
-        x1, y1: Top-left coordinates of crop area
-        x2, y2: Bottom-right coordinates of crop area
-
-    Returns:
-        Base64 encoded string of cropped PNG image
-    """
-    try:
-        # Decode base64 image
-        img_data = base64.b64decode(base64_img)
-
-        # Open image and validate
-        img = Image.open(io.BytesIO(img_data))
-        if img.mode not in ('RGB', 'RGBA'):
-            img = img.convert('RGB')
-
-        # Validate crop coordinates
-        width, height = img.size
-        x1 = max(0, min(x1, width))
-        y1 = max(0, min(y1, height))
-        x2 = max(0, min(x2, width))
-        y2 = max(0, min(y2, height))
-
-        if x1 >= x2 or y1 >= y2:
-            raise ValueError("Invalid crop coordinates")
-
-        # Perform crop
-        cropped_img = img.crop((x1, y1, x2, y2))
-
-        # Convert to PNG and encode
-        buffered = io.BytesIO()
-        cropped_img.save(buffered, format="PNG", quality=100)
-        return base64.b64encode(buffered.getvalue()).decode('utf-8')
-
-    except Exception as e:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Image cropping failed: {str(e)}"
         )
